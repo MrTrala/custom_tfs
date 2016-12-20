@@ -658,10 +658,29 @@ void Player::addStorageValue(const uint32_t key, const int32_t value, const bool
 	}
 }
 
-bool Player::getStorageValue(const uint32_t key, int32_t& value) const
-{
+bool Player::getStorageValue(const uint32_t key, int32_t& value) const {
 	auto it = storageMap.find(key);
 	if (it == storageMap.end()) {
+		value = -1;
+		return false;
+	}
+
+	value = it->second;
+	return true;
+}
+
+void Player::addAccountStorageValue(const uint32_t key, const int32_t value) {
+	if (value != -1) {
+		accountStorageMap[key] = value;
+	} else {
+		accountStorageMap.erase(key);
+	}
+}
+
+bool Player::getAccountStorageValue(const uint32_t key, int32_t& value) const
+{
+	auto it = accountStorageMap.find(key);
+	if (it == accountStorageMap.end()) {
 		value = -1;
 		return false;
 	}

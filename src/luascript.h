@@ -149,6 +149,7 @@ class ScriptEnvironment
 	private:
 		typedef std::vector<const LuaVariant*> VariantVector;
 		typedef std::map<uint32_t, int32_t> StorageMap;
+		typedef std::map<uint32_t, int32_t> AccountStorageMap;
 		typedef std::map<uint32_t, DBResult_ptr> DBResultMap;
 
 		LuaScriptInterface* interface;
@@ -895,6 +896,9 @@ class LuaScriptInterface
 
 		static int luaPlayerGetStorageValue(lua_State* L);
 		static int luaPlayerSetStorageValue(lua_State* L);
+
+		static int luaPlayerGetAccountStorageValue(lua_State* L);
+		static int luaPlayerSetAccountStorageValue(lua_State* L);
 
 		static int luaPlayerAddItem(lua_State* L);
 		static int luaPlayerAddItemEx(lua_State* L);

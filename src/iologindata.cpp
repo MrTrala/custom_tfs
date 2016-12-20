@@ -868,6 +868,27 @@ bool IOLoginData::savePlayer(Player* player)
 		return false;
 	}
 
+	query.str(std::string());
+	query << "DELETE FROM `account_storage` WHERE `account_id` = " << player->getAccount();
+	if (!db->executeQuery(query.str())) {
+		return false;
+	}
+
+	query.str(std::string());
+
+	DBInsert accountStorageQuery("INSERT INTO `account_storage` (`account_id`, `key`, `value`) VALUES ");
+
+	for (const auto& it : player->accountStorageMap) {
+		query << player->getAccount() << ',' << it.first << ',' << it.second;
+		if (!accountStorageQuery.addRow(query)) {
+			return false;
+		}
+	}
+
+	if (!accountStorageQuery.execute()) {
+		return false;
+	}
+
 	//End the transaction
 	return transaction.commit();
 }

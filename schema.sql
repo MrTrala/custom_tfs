@@ -316,6 +316,14 @@ CREATE TABLE IF NOT EXISTS `player_storage` (
   FOREIGN KEY (`player_id`) REFERENCES `players`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS `account_storage` (
+  `account_id` int(11) NOT NULL DEFAULT '0',
+  `key` int(10) unsigned NOT NULL DEFAULT '0',
+  `value` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`account_id`,`key`),
+  FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS `server_config` (
   `config` varchar(50) NOT NULL,
   `value` varchar(256) NOT NULL DEFAULT '',
