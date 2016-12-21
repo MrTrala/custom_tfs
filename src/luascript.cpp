@@ -2126,6 +2126,9 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "removeExperience", LuaScriptInterface::luaPlayerRemoveExperience);
 	registerMethod("Player", "getLevel", LuaScriptInterface::luaPlayerGetLevel);
 
+	registerMethod("Player", "getReset", LuaScriptInterface::luaPlayerGetReset);
+	registerMethod("Player", "setReset", LuaScriptInterface::luaPlayerSetReset);
+
 	registerMethod("Player", "getMagicLevel", LuaScriptInterface::luaPlayerGetMagicLevel);
 	registerMethod("Player", "getBaseMagicLevel", LuaScriptInterface::luaPlayerGetBaseMagicLevel);
 	registerMethod("Player", "setMaxMana", LuaScriptInterface::luaPlayerSetMaxMana);
@@ -7735,6 +7738,31 @@ int LuaScriptInterface::luaPlayerGetLevel(lua_State* L)
 	Player* player = getUserdata<Player>(L, 1);
 	if (player) {
 		lua_pushnumber(L, player->getLevel());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetReset(lua_State* L) {
+	// player:getReset()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushnumber(L, player->getReset());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSetReset(lua_State* L) {
+	// player:setReset(resets)
+	Player* player = getPlayer(L, 1);
+	if (player) {
+		int32_t resets = getNumber<int32_t>(L, 2);
+		player->setReset(resets);
+		player->sendStats();
+		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
 	}

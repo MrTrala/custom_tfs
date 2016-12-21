@@ -415,6 +415,13 @@ class Player final : public Creature, public Cylinder
 			return vocation->getId();
 		}
 
+		uint32_t getReset() const {
+			return reset;
+		}
+		void setReset(uint32_t resets) {
+			reset += resets;
+		}
+
 		PlayerSex_t getSex() const {
 			return sex;
 		}
@@ -1242,6 +1249,7 @@ class Player final : public Creature, public Cylinder
 		uint32_t conditionImmunities = 0;
 		uint32_t conditionSuppressions = 0;
 		uint32_t level = 1;
+		uint32_t reset = 0;
 		uint32_t magLevel = 0;
 		uint32_t actionTaskEvent = 0;
 		uint32_t nextStepEvent = 0;
