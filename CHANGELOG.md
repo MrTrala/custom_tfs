@@ -1,6 +1,19 @@
 Changelog
 ===============
 
+### 2016-12-23
+* Added Function to NPCs deducts money from Bank Account of Premium Accounts by Mkalo [commit](https://github.com/brunominervino/forgottenserver/commit/8bdfa3596bb864b3e5217e17819e1b67b6e93f9c)
+
+* Added Monster:onSpawn(position) Event (Based on Feature by Xeraphus [OTLand]) [commit](https://github.com/brunominervino/forgottenserver/commit/ad21e49300e167fb291d2009543e66640cbcb566)
+```lua
+-- Example
+function Monster:onSpawn(position)
+	local maxHealth = math.random(self:getHealth())
+	self:addHealth(-maxHealth)
+    return true
+end
+```
+
 ### 2016-12-21
 * Added Reset System [commit](https://github.com/brunominervino/forgottenserver/commit/49055485faef93a5ae2179117149a108604541a6)
 
