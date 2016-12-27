@@ -1,6 +1,9 @@
 Changelog
 ===============
 
+### 2016-12-26
+* Added Store System by OTX Team [commit](https://github.com/brunominervino/forgottenserver/commit/ae72873aee1afc0760e1ead9aa8291d78b66d7a2)
+
 ### 2016-12-23
 * Added Function to NPCs deducts money from Bank Account of Premium Accounts by Mkalo [commit](https://github.com/brunominervino/forgottenserver/commit/8bdfa3596bb864b3e5217e17819e1b67b6e93f9c)
 
