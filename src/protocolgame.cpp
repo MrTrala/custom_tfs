@@ -35,11 +35,13 @@
 #include "waitlist.h"
 #include "ban.h"
 #include "scheduler.h"
+#include "modules.h"
 
 extern ConfigManager g_config;
 extern Actions actions;
 extern CreatureEvents* g_creatureEvents;
 extern Chat* g_chat;
+extern Modules* g_modules;
 
 void ProtocolGame::release()
 {
@@ -404,6 +406,8 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 			return;
 		}
 	}
+
+	g_dispatcher.addTask(createTask(std::bind(&Modules::executeOnRecvbyte, g_modules, player, msg, recvbyte)));
 
 	switch (recvbyte) {
 		case 0x14: g_dispatcher.addTask(createTask(std::bind(&ProtocolGame::logout, getThis(), true, false))); break;
@@ -2387,8 +2391,8 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	msg.addByte(0x00); // can change pvp framing option
 	msg.addByte(0x00); // expert mode button enabled
 
-	msg.add<uint16_t>(0x00); // URL (string) to ingame store images
-	msg.add<uint16_t>(25); // premium coin package size
+	msg.addString(g_config.getString(ConfigManager::STORE_IMAGES_URL));
+	msg.add<uint16_t>(static_cast<uint16_t>(g_config.getNumber(ConfigManager::STORE_COIN_PACKET)));
 
 	writeToOutputBuffer(msg);
 
@@ -2410,6 +2414,7 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	sendInventoryItem(CONST_SLOT_FEET, player->getInventoryItem(CONST_SLOT_FEET));
 	sendInventoryItem(CONST_SLOT_RING, player->getInventoryItem(CONST_SLOT_RING));
 	sendInventoryItem(CONST_SLOT_AMMO, player->getInventoryItem(CONST_SLOT_AMMO));
+	sendInventoryItem(CONST_SLOT_STORE_INBOX, player->getInventoryItem(CONST_SLOT_STORE_INBOX));
 
 	sendStats();
 	sendSkills();

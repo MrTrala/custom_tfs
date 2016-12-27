@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `lastday` int(10) unsigned NOT NULL DEFAULT '0',
   `email` varchar(255) NOT NULL DEFAULT '',
   `creation` int(11) NOT NULL DEFAULT '0',
+  `coins` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB;
@@ -322,6 +323,16 @@ CREATE TABLE IF NOT EXISTS `account_storage` (
   `key` int(10) unsigned NOT NULL DEFAULT '0',
   `value` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`account_id`,`key`),
+  FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE `store_history` (
+  `account_id` int(11) NOT NULL,
+  `mode` smallint(2) NOT NULL DEFAULT '0',
+  `description` varchar(3500) NOT NULL,
+  `coin_amount` int(12) NOT NULL,
+  `time` bigint(20) UNSIGNED NOT NULL,
+  PRIMARY KEY (`account_id`),
   FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
