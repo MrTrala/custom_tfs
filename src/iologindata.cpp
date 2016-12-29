@@ -232,7 +232,7 @@ bool IOLoginData::preloadPlayer(Player* player, const std::string& name)
 bool IOLoginData::loadPlayerById(Player* player, uint32_t id)
 {
 	std::ostringstream query;
-	query << "SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `reset`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries` FROM `players` WHERE `id` = " << id;
+	query << "SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `reset`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `skill_mining`, `skill_mining_tries` FROM `players` WHERE `id` = " << id;
 	return loadPlayer(player, Database::getInstance()->storeQuery(query.str()));
 }
 
@@ -240,7 +240,7 @@ bool IOLoginData::loadPlayerByName(Player* player, const std::string& name)
 {
 	Database* db = Database::getInstance();
 	std::ostringstream query;
-	query << "SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `reset`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries` FROM `players` WHERE `name` = " << db->escapeString(name);
+	query << "SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `reset`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `skill_mining`, `skill_mining_tries` FROM `players` WHERE `name` = " << db->escapeString(name);
 	return loadPlayer(player, db->storeQuery(query.str()));
 }
 
@@ -398,6 +398,24 @@ bool IOLoginData::loadPlayer(Player* player, DBResult_ptr result)
 		player->skills[i].level = skillLevel;
 		player->skills[i].tries = skillTries;
 		player->skills[i].percent = Player::getPercentLevel(skillTries, nextSkillTries);
+	}
+
+	// Custom Skills
+	static const std::string customSkillNames[] = { "skill_mining" };
+	static const std::string customSkillNameTries[] = { "skill_mining_tries" };
+	static constexpr size_t customSize = sizeof(customSkillNames) / sizeof(std::string);
+	for (uint8_t i = 0; i < customSize; ++i) {
+		uint16_t skillLevel = result->getNumber<uint16_t>(customSkillNames[i]);
+		uint64_t skillTries = result->getNumber<uint64_t>(customSkillNameTries[i]);
+		uint64_t nextSkillTries = player->vocation->getReqCustomSkillTries(i, skillLevel + 1);
+		if (skillTries > nextSkillTries) {
+			skillTries = 0;
+		}
+
+		uint16_t percent = Player::getPercentLevel(skillTries, nextSkillTries);
+		player->customSkills[i].level = skillLevel;
+		player->customSkills[i].tries = skillTries;
+		player->customSkills[i].percent = percent;
 	}
 
 	std::ostringstream query;
@@ -754,6 +772,8 @@ bool IOLoginData::savePlayer(Player* player)
 	query << "`skill_shielding_tries` = " << player->skills[SKILL_SHIELD].tries << ',';
 	query << "`skill_fishing` = " << player->skills[SKILL_FISHING].level << ',';
 	query << "`skill_fishing_tries` = " << player->skills[SKILL_FISHING].tries << ',';
+	query << "`skill_mining` = " << player->customSkills[SKILL_MINING].level << ',';
+	query << "`skill_mining_tries` = " << player->customSkills[SKILL_MINING].tries << ',';
 
 	if (!player->isOffline()) {
 		query << "`onlinetime` = `onlinetime` + " << (time(nullptr) - player->lastLoginSaved) << ',';

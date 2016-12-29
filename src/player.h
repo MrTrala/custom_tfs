@@ -103,6 +103,12 @@ struct Skill {
 	uint8_t percent = 0;
 };
 
+struct CustomSkill {
+	uint64_t tries = 0;
+	uint16_t level = 0;
+	uint8_t percent = 0;
+};
+
 typedef std::map<uint32_t, uint32_t> MuteCountMap;
 
 static constexpr int32_t PLAYER_MAX_SPEED = 1500;
@@ -501,6 +507,10 @@ class Player final : public Creature, public Cylinder
 			varSkills[skill] += modifier;
 		}
 
+		void setVarCustomSkill(customSkills_t skill, int32_t modifier) {
+			varCustomSkills[skill] += modifier;
+		}
+
 		void setVarStats(stats_t stat, int32_t modifier);
 		int32_t getDefaultStats(stats_t stat) const;
 
@@ -619,6 +629,16 @@ class Player final : public Creature, public Cylinder
 			return skills[skill].percent;
 		}
 
+		uint16_t getCustomSkillLevel(uint8_t skill) const {
+			return std::max<int32_t>(0, customSkills[skill].level + varCustomSkills[skill]);
+		}
+		uint16_t getBaseCustomSkill(uint8_t skill) const {
+			return customSkills[skill].level;
+		}
+		uint8_t getCustomSkillPercent(uint8_t skill) const {
+			return customSkills[skill].percent;
+		}
+
 		bool getAddAttackSkill() const {
 			return addAttackSkillPoint;
 		}
@@ -636,6 +656,7 @@ class Player final : public Creature, public Cylinder
 		void drainMana(Creature* attacker, int32_t manaLoss) final;
 		void addManaSpent(uint64_t amount);
 		void addSkillAdvance(skills_t skill, uint64_t count);
+		void addCustomSkillAdvance(customSkills_t skill, uint64_t count);
 
 		int32_t getArmor() const final;
 		int32_t getDefense() const final;
@@ -1218,6 +1239,7 @@ class Player final : public Creature, public Cylinder
 		std::string guildNick;
 
 		Skill skills[SKILL_LAST + 1];
+		CustomSkill customSkills[CUSTOM_SKILL_LAST + 1];
 		LightInfo itemsLight;
 		Position loginPosition;
 		Position lastWalkthroughPosition;
@@ -1274,6 +1296,7 @@ class Player final : public Creature, public Cylinder
 		uint32_t editListId = 0;
 		uint32_t manaMax = 0;
 		int32_t varSkills[SKILL_LAST + 1] = {};
+		int32_t varCustomSkills[CUSTOM_SKILL_LAST + 1] = {};
 		int32_t varStats[STAT_LAST + 1] = {};
 		int32_t purchaseCallback = -1;
 		int32_t saleCallback = -1;

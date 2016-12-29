@@ -249,6 +249,12 @@ enum skills_t : uint8_t {
 	SKILL_LAST = SKILL_FISHING
 };
 
+enum customSkills_t : uint8_t {
+	SKILL_MINING = 0,
+	CUSTOM_SKILL_FIRST = SKILL_MINING,
+	CUSTOM_SKILL_LAST = SKILL_MINING
+};
+
 enum stats_t {
 	STAT_MAXHITPOINTS,
 	STAT_MAXMANAPOINTS,

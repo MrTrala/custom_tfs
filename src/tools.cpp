@@ -787,6 +787,16 @@ std::string getSkillName(uint8_t skillid)
 	}
 }
 
+std::string getCustomSkillName(uint8_t skillid) {
+	switch (skillid) {
+		case SKILL_MINING:
+			return "mining";
+
+		default:
+			return "unknown";
+	}
+}
+
 uint32_t adlerChecksum(const uint8_t* data, size_t length)
 {
 	if (length > NETWORKMESSAGE_MAXSIZE) {

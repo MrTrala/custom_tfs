@@ -1511,6 +1511,8 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(SKILL_MAGLEVEL)
 	registerEnum(SKILL_LEVEL)
 
+	registerEnum(SKILL_MINING)
+
 	registerEnum(SKULL_NONE)
 	registerEnum(SKULL_YELLOW)
 	registerEnum(SKULL_GREEN)
@@ -2145,6 +2147,12 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "getSkillPercent", LuaScriptInterface::luaPlayerGetSkillPercent);
 	registerMethod("Player", "getSkillTries", LuaScriptInterface::luaPlayerGetSkillTries);
 	registerMethod("Player", "addSkillTries", LuaScriptInterface::luaPlayerAddSkillTries);
+
+	registerMethod("Player", "getCustomSkillLevel", LuaScriptInterface::luaPlayerGetCustomSkillLevel);
+	registerMethod("Player", "getEffectiveCustomSkillLevel", LuaScriptInterface::luaPlayerGetEffectiveCustomSkillLevel);
+	registerMethod("Player", "getCustomSkillPercent", LuaScriptInterface::luaPlayerGetCustomSkillPercent);
+	registerMethod("Player", "getCustomSkillTries", LuaScriptInterface::luaPlayerGetCustomSkillTries);
+	registerMethod("Player", "addCustomSkillTries", LuaScriptInterface::luaPlayerAddCustomSkillTries);
 
 	registerMethod("Player", "addOfflineTrainingTime", LuaScriptInterface::luaPlayerAddOfflineTrainingTime);
 	registerMethod("Player", "getOfflineTrainingTime", LuaScriptInterface::luaPlayerGetOfflineTrainingTime);
@@ -7919,6 +7927,68 @@ int LuaScriptInterface::luaPlayerAddSkillTries(lua_State* L)
 		skills_t skillType = getNumber<skills_t>(L, 2);
 		uint64_t tries = getNumber<uint64_t>(L, 3);
 		player->addSkillAdvance(skillType, tries);
+		pushBoolean(L, true);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetCustomSkillLevel(lua_State* L) {
+	// player:getCustomSkillLevel(skillType)
+	customSkills_t skillType = getNumber<customSkills_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player && skillType <= CUSTOM_SKILL_LAST) {
+		lua_pushnumber(L, player->customSkills[skillType].level);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetEffectiveCustomSkillLevel(lua_State* L) {
+	// player:getEffectiveCustomSkillLevel(skillType)
+	customSkills_t skillType = getNumber<customSkills_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player && skillType <= CUSTOM_SKILL_LAST) {
+		lua_pushnumber(L, player->getCustomSkillLevel(skillType));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetCustomSkillPercent(lua_State* L) {
+	// player:getCustomSkillPercent(skillType)
+	customSkills_t skillType = getNumber<customSkills_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player && skillType <= CUSTOM_SKILL_LAST) {
+		lua_pushnumber(L, player->customSkills[skillType].percent);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetCustomSkillTries(lua_State* L) {
+	// player:getCustomSkillTries(skillType)
+	customSkills_t skillType = getNumber<customSkills_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player && skillType <= CUSTOM_SKILL_LAST) {
+		lua_pushnumber(L, player->customSkills[skillType].tries);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerAddCustomSkillTries(lua_State* L) {
+	// player:addCustomSkillTries(skillType, tries)
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		customSkills_t skillType = getNumber<customSkills_t>(L, 2);
+		uint64_t tries = getNumber<uint64_t>(L, 3);
+		player->addCustomSkillAdvance(skillType, tries);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);

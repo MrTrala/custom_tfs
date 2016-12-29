@@ -491,6 +491,53 @@ void Player::addSkillAdvance(skills_t skill, uint64_t count)
 	}
 }
 
+void Player::addCustomSkillAdvance(customSkills_t skill, uint64_t count) {
+	uint64_t currReqTries = vocation->getReqCustomSkillTries(skill, customSkills[skill].level);
+	uint64_t nextReqTries = vocation->getReqCustomSkillTries(skill, customSkills[skill].level + 1);
+	if (currReqTries >= nextReqTries) {
+		//player has reached max skill
+		return;
+	}
+
+	g_events->eventPlayerOnGainCustomSkillTries(this, skill, count);
+	if (count == 0) {
+		return;
+	}
+
+	while ((customSkills[skill].tries + count) >= nextReqTries) {
+		count -= nextReqTries - customSkills[skill].tries;
+		customSkills[skill].level++;
+		customSkills[skill].tries = 0;
+		customSkills[skill].percent = 0;
+
+		std::ostringstream ss;
+		ss << "You advanced to " << getCustomSkillName(skill) << " level " << customSkills[skill].level << '.';
+		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+
+		//g_creatureEvents->playerCustomAdvance(this, skill, (customSkills[skill].level - 1), customSkills[skill].level);
+
+		currReqTries = nextReqTries;
+		nextReqTries = vocation->getReqCustomSkillTries(skill, customSkills[skill].level + 1);
+		if (currReqTries >= nextReqTries) {
+			count = 0;
+			break;
+		}
+	}
+
+	customSkills[skill].tries += count;
+
+	uint32_t newPercent;
+	if (nextReqTries > currReqTries) {
+		newPercent = Player::getPercentLevel(customSkills[skill].tries, nextReqTries);
+	} else {
+		newPercent = 0;
+	}
+
+	if (customSkills[skill].percent != newPercent) {
+		customSkills[skill].percent = newPercent;
+	}
+}
+
 void Player::setVarStats(stats_t stat, int32_t modifier)
 {
 	varStats[stat] += modifier;
@@ -1968,6 +2015,34 @@ void Player::death(Creature* lastHitCreature)
 
 			skills[i].tries = std::max<int32_t>(0, skills[i].tries - lostSkillTries);
 			skills[i].percent = Player::getPercentLevel(skills[i].tries, vocation->getReqSkillTries(i, skills[i].level));
+		}
+
+		//Custom Skill loss
+		for (uint8_t i = CUSTOM_SKILL_FIRST; i <= CUSTOM_SKILL_LAST; ++i) { //for each skill
+			uint64_t sumSkillTries = 0;
+			for (uint16_t c = 1; c <= customSkills[i].level; ++c) { //sum up all required tries for all skill levels
+				sumSkillTries += vocation->getReqCustomSkillTries(i, c);
+			}
+
+			sumSkillTries += customSkills[i].tries;
+
+			uint32_t lostSkillTries = static_cast<uint32_t>(sumSkillTries * deathLossPercent);
+			while (lostSkillTries > customSkills[i].tries) {
+				lostSkillTries -= customSkills[i].tries;
+
+				if (customSkills[i].level <= 0) {
+					customSkills[i].level = 0;
+					customSkills[i].tries = 0;
+					lostSkillTries = 0;
+					break;
+				}
+
+				customSkills[i].tries = vocation->getReqCustomSkillTries(i, customSkills[i].level);
+				customSkills[i].level--;
+			}
+
+			customSkills[i].tries = std::max<int32_t>(0, customSkills[i].tries - lostSkillTries);
+			customSkills[i].percent = Player::getPercentLevel(customSkills[i].tries, vocation->getReqCustomSkillTries(i, customSkills[i].level));
 		}
 
 		//Level loss

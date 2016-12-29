@@ -123,6 +123,18 @@ bool Vocations::loadFromXml()
 				} else {
 					std::cout << "[Notice - Vocations::loadFromXml] Missing skill id for vocation: " << voc.id << std::endl;
 				}
+			} else if (strcasecmp(childNode.name(), "custom") == 0) {
+				pugi::xml_attribute skillIdAttribute = childNode.attribute("id");
+				if (skillIdAttribute) {
+					uint16_t skill_id = pugi::cast<uint16_t>(skillIdAttribute.value());
+					if (skill_id <= CUSTOM_SKILL_LAST) {
+						voc.customSkillMultipliers[skill_id] = pugi::cast<float>(childNode.attribute("multiplier").value());
+					} else {
+						std::cout << "[Notice - Vocations::loadFromXml] No valid custom skill id: " << skill_id << " for vocation: " << voc.id << std::endl;
+					}
+				} else {
+					std::cout << "[Notice - Vocations::loadFromXml] Missing skill id for vocation: " << voc.id << std::endl;
+				}
 			} else if (strcasecmp(childNode.name(), "formula") == 0) {
 				pugi::xml_attribute meleeDamageAttribute = childNode.attribute("meleeDamage");
 				if (meleeDamageAttribute) {
@@ -194,6 +206,23 @@ uint64_t Vocation::getReqSkillTries(uint8_t skill, uint16_t level)
 
 	uint64_t tries = static_cast<uint64_t>(skillBase[skill] * std::pow(static_cast<double>(skillMultipliers[skill]), level - 11));
 	cacheSkill[skill][level] = tries;
+	return tries;
+}
+
+uint32_t Vocation::customSkillBase[CUSTOM_SKILL_LAST + 1] = { 20 };
+
+uint64_t Vocation::getReqCustomSkillTries(uint8_t skill, uint16_t level) {
+	if (skill > CUSTOM_SKILL_LAST) {
+		return 0;
+	}
+
+	auto it = customCacheSkill[skill].find(level);
+	if (it != customCacheSkill[skill].end()) {
+		return it->second;
+	}
+
+	uint64_t tries = static_cast<uint64_t>(customSkillBase[skill] * std::pow(static_cast<double>(customSkillMultipliers[skill]), static_cast<uint16_t>(level) - 1));
+	customCacheSkill[skill][level] = tries;
 	return tries;
 }
 

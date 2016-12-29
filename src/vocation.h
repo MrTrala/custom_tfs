@@ -35,6 +35,7 @@ class Vocation
 			return description;
 		}
 		uint64_t getReqSkillTries(uint8_t skill, uint16_t level);
+		uint64_t getReqCustomSkillTries(uint8_t skill, uint16_t level);
 		uint64_t getReqMana(uint32_t magLevel);
 
 		uint16_t getId() const {
@@ -96,11 +97,13 @@ class Vocation
 
 		std::map<uint32_t, uint64_t> cacheMana;
 		std::map<uint32_t, uint32_t> cacheSkill[SKILL_LAST + 1];
+		std::map<uint32_t, uint32_t> customCacheSkill[CUSTOM_SKILL_LAST + 1];
 
 		std::string name = "none";
 		std::string description;
 
 		float skillMultipliers[SKILL_LAST + 1] = {1.5f, 2.0f, 2.0f, 2.0f, 2.0f, 1.5f, 1.1f};
+		float customSkillMultipliers[CUSTOM_SKILL_LAST + 1] = { 1.1f };
 		float manaMultiplier = 4.0f;
 
 		uint32_t gainHealthTicks = 6;
@@ -121,6 +124,7 @@ class Vocation
 		uint8_t clientId = 0;
 
 		static uint32_t skillBase[SKILL_LAST + 1];
+		static uint32_t customSkillBase[CUSTOM_SKILL_LAST + 1];
 };
 
 class Vocations
