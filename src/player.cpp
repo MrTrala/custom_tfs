@@ -3154,7 +3154,7 @@ void Player::doAttacking(uint32_t)
 		return;
 	}
 
-	Item* item = getWeapon(false);
+	Item* item = getWeapon();
 	bool result = false;
 	uint32_t delay = getAttackSpeed();
 
