@@ -3144,37 +3144,35 @@ void Player::getPathSearchParams(const Creature* creature, FindPathParams& fpp) 
 
 void Player::doAttacking(uint32_t)
 {
-	if (lastAttack == 0) {
+	if (!lastAttack)
 		lastAttack = OTSYS_TIME() - getAttackSpeed() - 1;
-	}
+	else if ((OTSYS_TIME() - lastAttack) < getAttackSpeed())
+		return;
 
 	if (hasCondition(CONDITION_PACIFIED)) {
+		lastAttack = OTSYS_TIME();
 		return;
 	}
 
-	if ((OTSYS_TIME() - lastAttack) >= getAttackSpeed()) {
-		bool result = false;
+	Item* item = getWeapon(false);
+	bool result = false;
+	uint32_t delay = getAttackSpeed();
 
-		Item* tool = getWeapon();
-		const Weapon* weapon = g_weapons->getWeapon(tool);
-		if (weapon) {
-			if (!weapon->interruptSwing()) {
-				result = weapon->useWeapon(this, tool, attackedCreature);
-			} else if (!canDoAction()) {
-				uint32_t delay = getNextActionTime();
-				SchedulerTask* task = createSchedulerTask(delay, std::bind(&Game::checkCreatureAttack,
-				                      &g_game, getID()));
-				setNextActionTask(task);
-			} else {
-				result = weapon->useWeapon(this, tool, attackedCreature);
-			}
+	if (const Weapon* _weapon = g_weapons->getWeapon(item)) {
+		if (_weapon->interruptSwing() && !canDoAction()) {
+			result = false;
 		} else {
-			result = Weapon::useFist(this, attackedCreature);
+			result = _weapon->useWeapon(this, item, attackedCreature);
 		}
+	} else {
+		result = Weapon::useFist(this, attackedCreature);
+	}
 
-		if (result) {
-			lastAttack = OTSYS_TIME();
-		}
+	SchedulerTask* task = createSchedulerTask(std::max<uint32_t>(SCHEDULER_MINTICKS, delay), std::bind(&Game::checkCreatureAttack, &g_game, getID()));
+	setNextActionTask(task);
+
+	if (result) {
+		lastAttack = OTSYS_TIME();
 	}
 }
 
